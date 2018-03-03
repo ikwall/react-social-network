@@ -343,17 +343,6 @@ body {
   font-size: 15px;
   line-height: 1.5; }
 
-html {
-  overflow-x: hidden; }
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: 'Roboto', sans-serif; }
-
 /* Change autocomplete styles in WebKit */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
@@ -490,6 +479,23 @@ g__input-underline::before {
 
 g__input-underline::after {
   display: none; }
+
+.g__app-name {
+  text-align: center;
+  padding: 20px;
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 32px;
+  margin: auto;
+  color: rgba(138, 148, 138, 0.2); }
+
+.g__paper-title {
+  text-align: left;
+  padding-top: 16px;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 32px;
+  margin: 0; }
 
 .master__progress {
   position: fixed;
@@ -640,11 +646,9 @@ g__input-underline::after {
   position: fixed;
   right: 5px;
   bottom: 5px;
-  z-index: 1; }
+  z-index: 1101; }
   .sendFeedback__content .paper {
-    width: 350px;
     height: 100%;
-    margin: 20px;
     text-align: center; }
   .sendFeedback__content .main-box {
     padding: 26px 26px 0px 26px; }

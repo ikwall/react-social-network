@@ -1,10 +1,12 @@
 // - Import react components
 import React, { Component } from 'react'
+import { findDOMNode } from 'react-dom'
 import { connect } from 'react-redux'
 import { NavLink } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import moment from 'moment/moment'
 import Linkify from 'react-linkify'
+import Popover from 'material-ui/Popover'
 import { getTranslate, getActiveLanguage } from 'react-localize-redux'
 
 import { Comment } from 'core/domain/comments'
@@ -90,7 +92,6 @@ const styles = (theme: any) => ({
  * Create component class
  */
 export class CommentComponent extends Component<ICommentComponentProps, ICommentComponentState> {
-
   static propTypes = {
     /**
      * Comment object
@@ -105,6 +106,11 @@ export class CommentComponent extends Component<ICommentComponentProps, IComment
      */
     disableComments: PropTypes.bool
   }
+
+  /**
+   * Fields
+   */
+  buttonMenu = null
 
   /**
    * DOM styles
@@ -181,7 +187,11 @@ export class CommentComponent extends Component<ICommentComponentProps, IComment
       /**
        * The anchor of comment menu element
        */
-      openMenu: false
+      openMenu: false,
+      /**
+       * Anchor element
+       */
+      anchorEl: null
 
     }
 
@@ -221,7 +231,6 @@ export class CommentComponent extends Component<ICommentComponentProps, IComment
    */
   handleUpdateComment = (evt: any) => {
     const { comment } = this.props
-    comment.editorStatus = undefined
     comment.text = this.state.text
     this.props.update!(comment)
     this.setState({
@@ -265,7 +274,7 @@ export class CommentComponent extends Component<ICommentComponentProps, IComment
    * Handle comment menu
    */
   handleCommentMenu = (event: any) => {
-    this.setState({ openMenu: true })
+    this.setState({ openMenu: true,  anchorEl: findDOMNode(this.buttonMenu!), })
   }
 
   /**
@@ -291,30 +300,44 @@ export class CommentComponent extends Component<ICommentComponentProps, IComment
     /**
      * Comment object from props
      */
-    const { comment, classes, fullName, avatar, translate } = this.props
+    const { comment, classes, fullName, avatar, translate , editorStatus} = this.props
 
-    const { openMenu } = this.state
+    const { openMenu, anchorEl } = this.state
 
-    const RightIconMenu = () => (
-      <Manager
-        className={classes.iconButton}
-      >
-        <Target>
+    const rightIconMenu = (
+      <>
           <IconButton
+          buttonRef={(node: any) => {
+            this.buttonMenu = node
+          }}
             aria-owns={openMenu! ? 'comment-menu' : ''}
             aria-haspopup='true'
             onClick={this.handleCommentMenu}
           >
             <MoreVertIcon className={classes.moreIcon} />
           </IconButton>
-        </Target>
-        <Popper
+        {/* <Popper
           placement='bottom-start'
           eventsEnabled={openMenu!}
           className={classNames({ [classes.popperClose]: !openMenu! }, { [classes.popperOpen]: openMenu! })}
         >
           <ClickAwayListener onClickAway={this.handleCloseCommentMenu}>
-            <Grow in={openMenu!} >
+            <Grow in={openMenu!} > */}
+            <Popover
+                open={openMenu!}
+                anchorEl={anchorEl}
+                anchorReference={'anchorEl'}
+                anchorPosition={{ top: 0, left: 0 }}
+                onClose={this.handleCloseCommentMenu}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'center',
+                }}
+                transformOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'center',
+                }}
+              >
               <Paper>
                 <MenuList role='menu'>
                   <MenuItem className={classes.rightIconMenuItem}>{translate!('comment.replyButton')}</MenuItem>
@@ -322,10 +345,9 @@ export class CommentComponent extends Component<ICommentComponentProps, IComment
                   {(this.props.isCommentOwner || this.props.isPostOwner) ? (<MenuItem className={classes.rightIconMenuItem} onClick={(evt: any) => this.handleDelete(evt, comment.id, comment.postId)}>{translate!('comment.deleteButton')}</MenuItem>) : ''}
                 </MenuList>
               </Paper>
-            </Grow>
-          </ClickAwayListener>
-        </Popper>
-      </Manager>
+              </Popover>
+
+              </>
     )
 
     const Author = () => (
@@ -336,7 +358,7 @@ export class CommentComponent extends Component<ICommentComponentProps, IComment
         }}>{moment.unix(comment.creationDate!).fromNow()}</span>
       </div>
     )
-    const { userId, editorStatus } = comment
+    const { userId } = comment
     const commentBody = (
       <div style={{ outline: 'none', flex: 'auto', flexGrow: 1 }}>
       { editorStatus ? <TextField
@@ -373,7 +395,7 @@ export class CommentComponent extends Component<ICommentComponentProps, IComment
               title={editorStatus ? '' : <Author />}
               subheader={commentBody}
               avatar={<NavLink to={`/${userId}`}><UserAvatar fullName={fullName!} fileName={avatar!} size={24} /></NavLink>}
-              action={(!this.props.isCommentOwner && !this.props.isPostOwner && this.props.disableComments) || editorStatus ? '' : (<RightIconMenu />)}
+              action={(!this.props.isCommentOwner && !this.props.isPostOwner && this.props.disableComments) || editorStatus ? '' : rightIconMenu}
             >
             </CardHeader>
 

@@ -2,6 +2,9 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
+
+// - Material UI
+import { withStyles } from 'material-ui/styles'
 import List, { ListItem, ListItemText } from 'material-ui/List'
 
 // - Import app components
@@ -14,6 +17,15 @@ import { ICommentListComponentState } from './ICommentListComponentState'
 import { Comment } from 'core/domain/comments'
 
 // - Import actions
+
+const styles = (theme: any) => ({
+  list: {
+    width: '100%',
+    maxHeight: 290,
+    overflowY: 'auto',
+    overflowX: 'visible'
+  }
+})
 
 /**
  * Create component class
@@ -54,7 +66,7 @@ export class CommentListComponent extends Component<ICommentListComponentProps, 
    * @return {DOM} list of comments' DOM
    */
   commentList = () => {
-    let comments = this.props.comments
+    let {comments, commentsEditorStatus} = this.props
     if (comments) {
 
       let parsedComments: Comment[] = []
@@ -68,7 +80,15 @@ export class CommentListComponent extends Component<ICommentListComponentProps, 
 
       return sortedComments.map((comment: Comment, index: number, array: Comment) => {
 
-        return <CommentComponent key={comment.id!} comment={comment} isPostOwner={this.props.isPostOwner} disableComments={this.props.disableComments}/>
+        return (
+             <CommentComponent 
+                key={comment.id!} 
+                comment={comment} 
+                isPostOwner={this.props.isPostOwner} 
+                disableComments={this.props.disableComments}
+                editorStatus={(commentsEditorStatus![comment.id!]) || false}
+              />
+              )
 
       })
 
@@ -80,17 +100,11 @@ export class CommentListComponent extends Component<ICommentListComponentProps, 
    * @return {react element} return the DOM which rendered by component
    */
   render () {
-
-    const styles: any = {
-      list: {
-        width: '100%',
-        maxHeight: 450
-      }
-    }
+    const {classes} = this.props
 
     return (
 
-      <List style={styles.list}>
+      <List className={classes.list}>
 
         {this.commentList()}
       </List>
@@ -116,11 +130,13 @@ const mapDispatchToProps = (dispatch: any, ownProps: ICommentListComponentProps)
  * @param  {object} ownProps is the props belong to component
  * @return {object}          props of component
  */
-const mapStateToProps = (state: any) => {
+const mapStateToProps = (state: any, ownProps: ICommentListComponentProps) => {
+  const { comment } = state
+  const commentsEditorStatus: { [commentId: string]: Comment } = comment.editorStatus[ownProps.postId] || {}
   return {
-
+    commentsEditorStatus
   }
 }
 
 // - Connect component to redux store
-export default connect(mapStateToProps, mapDispatchToProps)(CommentListComponent as any)
+export default connect(mapStateToProps, mapDispatchToProps)((withStyles(styles as any)(CommentListComponent as any))as any)

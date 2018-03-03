@@ -130,12 +130,12 @@ export const dbGetComments = (ownerUserId: string, postId: string) => {
  */
 export const dbUpdateComment = (comment: Comment) => {
   return (dispatch: any, getState: Function) => {
-    delete comment.editorStatus
     dispatch(globalActions.showTopLoading())
 
     return commentService.updateComment(comment)
       .then(() => {
         dispatch(updateComment( comment))
+        dispatch(closeCommentEditor(comment))
         dispatch(globalActions.hideTopLoading())
 
       }, (error: SocialError) => {

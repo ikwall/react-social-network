@@ -77,6 +77,7 @@ const styles = (theme: any) => ({
   },
   drawerHeader: theme.mixins.toolbar,
   drawerPaper: {
+    maxWidth: drawerWidth,
     width: drawerWidth,
     [theme.breakpoints.up('md')]: {
       width: drawerWidth,
@@ -91,12 +92,11 @@ const styles = (theme: any) => ({
       height: '100%',
     },
     top: 70,
-    backgroundColor: 'transparent',
+    backgroundColor: '#fafafa',
     borderRight: 0
   },
   menu: {
     height: '100%',
-    backgroundColor: '#EEEEEE'
   },
   content: {
     backgroundColor: 'transparent',
@@ -160,7 +160,6 @@ export class HomeComponent extends Component<IHomeComponentProps, IHomeComponent
    * Handle drawer toggle
    */
   handleDrawerToggle = () => {
-    console.trace('toggle')
     this.setState({ drawerOpen: !this.state.drawerOpen })
   }
 
