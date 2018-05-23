@@ -3,36 +3,36 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import { getTranslate, getActiveLanguage } from 'react-localize-redux'
+import { Map } from 'immutable'
 
-import { Card, CardActions, CardHeader, CardMedia, CardContent } from 'material-ui'
-import List, {
-  ListItem,
-  ListItemAvatar,
-  ListItemIcon,
-  ListItemSecondaryAction,
-  ListItemText
-} from 'material-ui/List'
-import Paper from 'material-ui/Paper'
-import Dialog, {
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle
-} from 'material-ui/Dialog'
-import Button from 'material-ui/Button'
-import RaisedButton from 'material-ui/Button'
-import { grey } from 'material-ui/colors'
-import IconButton from 'material-ui/IconButton'
-import TextField from 'material-ui/TextField'
-import Tooltip from 'material-ui/Tooltip'
-import { MenuList, MenuItem } from 'material-ui/Menu'
-import SvgRemoveImage from 'material-ui-icons/RemoveCircle'
-import SvgCamera from 'material-ui-icons/PhotoCamera'
-import MoreVertIcon from 'material-ui-icons/MoreVert'
-import { withStyles } from 'material-ui/styles'
+import { Card, CardActions, CardHeader, CardMedia, CardContent } from '@material-ui/core'
+import ListItemText from '@material-ui/core/ListItemText'
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
+import ListItem from '@material-ui/core/ListItem'
+import List from '@material-ui/core/List'
+import ListItemIcon from '@material-ui/core/ListItemIcon'
+import ListItemAvatar from '@material-ui/core/ListItemAvatar'
+import Paper from '@material-ui/core/Paper'
+import Dialog from '@material-ui/core/Dialog'
+import DialogActions from '@material-ui/core/DialogActions'
+import DialogContent from '@material-ui/core/DialogContent'
+import DialogTitle from '@material-ui/core/DialogTitle'
+import DialogContentText from '@material-ui/core/DialogContentText'
+import Button from '@material-ui/core/Button'
+import RaisedButton from '@material-ui/core/Button'
+import { grey } from '@material-ui/core/colors'
+import IconButton from '@material-ui/core/IconButton'
+import TextField from '@material-ui/core/TextField'
+import Tooltip from '@material-ui/core/Tooltip'
+import MenuList from '@material-ui/core/MenuList'
+import MenuItem from '@material-ui/core/MenuItem'
+import SvgRemoveImage from '@material-ui/icons/RemoveCircle'
+import SvgCamera from '@material-ui/icons/PhotoCamera'
+import MoreVertIcon from '@material-ui/icons/MoreVert'
+import { withStyles } from '@material-ui/core/styles'
 import { Manager, Target, Popper } from 'react-popper'
-import Grow from 'material-ui/transitions/Grow'
-import ClickAwayListener from 'material-ui/utils/ClickAwayListener'
+import Grow from '@material-ui/core/Grow'
+import ClickAwayListener from '@material-ui/core/ClickAwayListener'
 import classNames from 'classnames'
 
 // - Import app components
@@ -44,12 +44,12 @@ import UserAvatarComponent from 'components/userAvatar'
 import * as PostAPI from 'api/PostAPI'
 
 // - Import actions
-import * as imageGalleryActions from 'actions/imageGalleryActions'
-import * as postActions from 'actions/postActions'
+import * as imageGalleryActions from 'store/actions/imageGalleryActions'
+import * as postActions from 'store/actions/postActions'
 import { IPostWriteComponentProps } from './IPostWriteComponentProps'
 import { IPostWriteComponentState } from './IPostWriteComponentState'
 import { Post } from 'core/domain/posts'
-import Grid from 'material-ui/Grid/Grid'
+import Grid from '@material-ui/core/Grid/Grid'
 
 const styles = (theme: any) => ({
   fullPageXs: {
@@ -108,15 +108,15 @@ export class PostWriteComponent extends Component<IPostWriteComponentProps, IPos
       /**
        * Post text
        */
-      postText: this.props.edit && postModel ? (postModel.body ? postModel.body! : '') : '',
+      postText: this.props.edit && postModel ? postModel.get('body', '') : '',
       /**
        * The URL image of the post
        */
-      image: this.props.edit && postModel ? (postModel.image ? postModel.image! : '') : '',
+      image: this.props.edit && postModel ? postModel.get('image', '') : '',
       /**
        * The path identifier of image on the server
        */
-      imageFullPath: this.props.edit && postModel ? (postModel.imageFullPath ? postModel.imageFullPath! : '') : '',
+      imageFullPath: this.props.edit && postModel ? postModel.get('imageFullPath', '') : '',
       /**
        * If it's true gallery will be open
        */
@@ -132,11 +132,11 @@ export class PostWriteComponent extends Component<IPostWriteComponentProps, IPos
       /**
        * If it's true comment will be disabled on post
        */
-      disableComments: this.props.edit && postModel ? postModel.disableComments! : false,
+      disableComments: this.props.edit && postModel ? postModel.get('disableComments') : false,
       /**
        * If it's true share will be disabled on post
        */
-      disableSharing: this.props.edit && postModel ? postModel.disableSharing! : false
+      disableSharing: this.props.edit && postModel ? postModel.get('disableSharing') : false
 
     }
 
@@ -253,14 +253,14 @@ export class PostWriteComponent extends Component<IPostWriteComponentProps, IPos
         }, onRequestClose)
       }
     } else { // In edit status we pass post to update functions
-      postModel!.body = postText
-      postModel!.tags = tags
-      postModel!.image = image
-      postModel!.imageFullPath = imageFullPath
-      postModel!.disableComments = disableComments
-      postModel!.disableSharing = disableSharing
+     const updatedPost =  postModel!.set('body', postText)
+      .set('tags', tags)
+      .set('image', image)
+      .set('imageFullPath', imageFullPath)
+      .set('disableComments', disableComments)
+      .set('disableSharing', disableSharing)
 
-      update!(postModel!, onRequestClose)
+      update!(updatedPost, onRequestClose)
     }
   }
 
@@ -337,34 +337,38 @@ export class PostWriteComponent extends Component<IPostWriteComponentProps, IPos
     if (!nextProps.open) {
       const { postModel } = this.props
       this.setState({
-        /**
-         * Post text
-         */
-        postText: this.props.edit && postModel ? (postModel.body ? postModel.body! : '') : '',
-        /**
-         * The URL image of the post
-         */
-        image: this.props.edit && postModel ? (postModel.image ? postModel.image! : '') : '',
-        /**
-         * The path identifier of image on the server
-         */
-        imageFullPath: this.props.edit && postModel ? (postModel.imageFullPath ? postModel.imageFullPath! : '') : '',
-        /**
-         * If it's true gallery will be open
-         */
-        galleryOpen: false,
-        /**
-         * If it's true post button will be disabled
-         */
-        disabledPost: true,
-        /**
-         * If it's true comment will be disabled on post
-         */
-        disableComments: this.props.edit && postModel ? postModel.disableComments! : false,
-        /**
-         * If it's true share will be disabled on post
-         */
-        disableSharing: this.props.edit && postModel ? postModel.disableSharing! : false
+      /**
+       * Post text
+       */
+      postText: this.props.edit && postModel ? postModel.get('body', '') : '',
+      /**
+       * The URL image of the post
+       */
+      image: this.props.edit && postModel ? postModel.get('image', '') : '',
+      /**
+       * The path identifier of image on the server
+       */
+      imageFullPath: this.props.edit && postModel ? postModel.get('imageFullPath', '') : '',
+      /**
+       * If it's true gallery will be open
+       */
+      galleryOpen: false,
+      /**
+       * Whether menu is open
+       */
+      menuOpen: false,
+      /**
+       * If it's true post button will be disabled
+       */
+      disabledPost: true,
+      /**
+       * If it's true comment will be disabled on post
+       */
+      disableComments: this.props.edit && postModel ? postModel.get('disableComments') : false,
+      /**
+       * If it's true share will be disabled on post
+       */
+      disableSharing: this.props.edit && postModel ? postModel.get('disableSharing') : false
 
       })
     }
@@ -576,7 +580,7 @@ export class PostWriteComponent extends Component<IPostWriteComponentProps, IPos
 const mapDispatchToProps = (dispatch: any, ownProps: IPostWriteComponentProps) => {
   return {
     post: (post: Post, callBack: Function) => dispatch(postActions.dbAddImagePost(post, callBack)),
-    update: (post: Post, callBack: Function) => dispatch(postActions.dbUpdatePost(post, callBack))
+    update: (post: Map<string, any>, callBack: Function) => dispatch(postActions.dbUpdatePost(post, callBack))
   }
 }
 
@@ -586,12 +590,14 @@ const mapDispatchToProps = (dispatch: any, ownProps: IPostWriteComponentProps) =
  * @param  {object} ownProps is the props belong to component
  * @return {object}          props of component
  */
-const mapStateToProps = (state: any, ownProps: IPostWriteComponentProps) => {
+const mapStateToProps = (state: Map<string, any>, ownProps: IPostWriteComponentProps) => {
+  const uid = state.getIn(['authorize', 'uid'])
+  const user = state.getIn(['user', 'info', uid], {})
   return {
-    translate: getTranslate(state.locale),
-    postImageState: state.imageGallery.status,
-    ownerAvatar: state.user.info && state.user.info[state.authorize.uid] ? state.user.info[state.authorize.uid].avatar : '',
-    ownerDisplayName: state.user.info && state.user.info[state.authorize.uid] ? state.user.info[state.authorize.uid].fullName : ''
+    translate: getTranslate(state.get('locale')),
+    postImageState: state.getIn(['imageGallery', 'status']),
+    ownerAvatar: user.avatar || '',
+    ownerDisplayName: user.fullName || ''
   }
 }
 

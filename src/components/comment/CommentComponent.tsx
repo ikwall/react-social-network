@@ -6,26 +6,32 @@ import { NavLink } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import moment from 'moment/moment'
 import Linkify from 'react-linkify'
-import Popover from 'material-ui/Popover'
+import Popover from '@material-ui/core/Popover'
 import { getTranslate, getActiveLanguage } from 'react-localize-redux'
+import {Map} from 'immutable'
 
 import { Comment } from 'core/domain/comments'
 
 // - Import material UI libraries
-import Divider from 'material-ui/Divider'
-import Paper from 'material-ui/Paper'
-import Button from 'material-ui/Button'
-import { grey } from 'material-ui/colors'
-import IconButton from 'material-ui/IconButton'
-import MoreVertIcon from 'material-ui-icons/MoreVert'
-import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List'
-import Menu, { MenuList, MenuItem } from 'material-ui/Menu'
-import TextField from 'material-ui/TextField'
-import { withStyles } from 'material-ui/styles'
+import Divider from '@material-ui/core/Divider'
+import Paper from '@material-ui/core/Paper'
+import Button from '@material-ui/core/Button'
+import { grey } from '@material-ui/core/colors'
+import IconButton from '@material-ui/core/IconButton'
+import MoreVertIcon from '@material-ui/icons/MoreVert'
+import ListItemText from '@material-ui/core/ListItemText'
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
+import ListItem from '@material-ui/core/ListItem'
+import List from '@material-ui/core/List'
+import ListItemIcon from '@material-ui/core/ListItemIcon'
+import MenuList from '@material-ui/core/MenuList'
+import MenuItem from '@material-ui/core/MenuItem'
+import TextField from '@material-ui/core/TextField'
+import { withStyles } from '@material-ui/core/styles'
 import { Manager, Target, Popper } from 'react-popper'
-import { Card, CardActions, CardHeader, CardMedia, CardContent } from 'material-ui'
-import Grow from 'material-ui/transitions/Grow'
-import ClickAwayListener from 'material-ui/utils/ClickAwayListener'
+import { Card, CardActions, CardHeader, CardMedia, CardContent } from '@material-ui/core'
+import Grow from '@material-ui/core/Grow'
+import ClickAwayListener from '@material-ui/core/ClickAwayListener'
 import classNames from 'classnames'
 
 // - Import app components
@@ -34,8 +40,8 @@ import UserAvatar from 'components/userAvatar'
 // - Import API
 
 // - Import actions
-import * as commentActions from 'actions/commentActions'
-import * as userActions from 'actions/userActions'
+import * as commentActions from 'store/actions/commentActions'
+import * as userActions from 'store/actions/userActions'
 
 import { ICommentComponentProps } from './ICommentComponentProps'
 import { ICommentComponentState } from './ICommentComponentState'
@@ -285,8 +291,8 @@ export class CommentComponent extends Component<ICommentComponentProps, IComment
   }
 
   componentWillMount () {
-    const { userId } = this.props.comment
-    if (!this.props.isCommentOwner && !this.props.info![userId!]) {
+    const { commentOwner } = this.props
+    if (!this.props.isCommentOwner && !commentOwner) {
       this.props.getUserInfo!()
     }
   }
@@ -432,15 +438,16 @@ const mapDispatchToProps = (dispatch: any, ownProps: ICommentComponentProps) => 
  * @param  {object} ownProps is the props belong to component
  * @return {object}          props of component
  */
-const mapStateToProps = (state: any, ownProps: any) => {
-  const { uid } = state.authorize
-  const avatar = state.user.info && state.user.info[ownProps.comment.userId] ? state.user.info[ownProps.comment.userId].avatar || '' : ''
-  const fullName = state.user.info && state.user.info[ownProps.comment.userId] ? state.user.info[ownProps.comment.userId].fullName || '' : ''
+const mapStateToProps = (state: any, ownProps: ICommentComponentProps) => {
+  const commentOwnerId = ownProps.comment.userId
+  const uid = state.getIn(['authorize', 'uid'])
+  const avatar =  ownProps.comment.userAvatar
+  const fullName = ownProps.comment.userDisplayName
   return {
-    translate: getTranslate(state.locale),
+    translate: getTranslate(state.get('locale')),
     uid: uid,
-    isCommentOwner: (uid === ownProps.comment.userId),
-    info: state.user.info,
+    isCommentOwner: (uid === commentOwnerId),
+    commentOwner: state.getIn(['user', 'info', commentOwnerId]),
     avatar,
     fullName
   }

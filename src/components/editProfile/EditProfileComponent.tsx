@@ -5,33 +5,39 @@ import PropTypes from 'prop-types'
 import { getTranslate, getActiveLanguage } from 'react-localize-redux'
 import moment from 'moment/moment'
 import DayPickerInput from 'react-day-picker/DayPickerInput'
-import 'react-day-picker/lib/style.css'
 import MomentLocaleUtils, {
   formatDate,
   parseDate,
 } from 'react-day-picker/moment'
+import {Map} from 'immutable'
 
-import { grey } from 'material-ui/colors'
-import IconButton from 'material-ui/IconButton'
-import MoreVertIcon from 'material-ui-icons/MoreVert'
-import SvgCamera from 'material-ui-icons/PhotoCamera'
-import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List'
-import Menu, { MenuList, MenuItem } from 'material-ui/Menu'
-import Button from 'material-ui/Button'
-import RaisedButton from 'material-ui/Button'
+import { grey } from '@material-ui/core/colors'
+import IconButton from '@material-ui/core/IconButton'
+import MoreVertIcon from '@material-ui/icons/MoreVert'
+import SvgCamera from '@material-ui/icons/PhotoCamera'
+import ListItemText from '@material-ui/core/ListItemText'
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction'
+import ListItem from '@material-ui/core/ListItem'
+import List from '@material-ui/core/List'
+import ListItemIcon from '@material-ui/core/ListItemIcon'
+import MenuList from '@material-ui/core/MenuList'
+import MenuItem from '@material-ui/core/MenuItem'
+import Button from '@material-ui/core/Button'
+import RaisedButton from '@material-ui/core/Button'
 import EventListener, { withOptions } from 'react-event-listener'
-import Dialog, {
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle
-} from 'material-ui/Dialog'
-import Divider from 'material-ui/Divider'
-import Paper from 'material-ui/Paper'
-import TextField from 'material-ui/TextField'
-import Input, { InputLabel } from 'material-ui/Input'
-import { FormControl, FormHelperText } from 'material-ui/Form'
-import { withStyles } from 'material-ui/styles'
+import Dialog from '@material-ui/core/Dialog'
+import DialogActions from '@material-ui/core/DialogActions'
+import DialogContent from '@material-ui/core/DialogContent'
+import DialogTitle from '@material-ui/core/DialogTitle'
+import DialogContentText from '@material-ui/core/DialogContentText'
+import Divider from '@material-ui/core/Divider'
+import Paper from '@material-ui/core/Paper'
+import TextField from '@material-ui/core/TextField'
+import Input from '@material-ui/core/Input'
+import InputLabel from '@material-ui/core/InputLabel'
+import  FormHelperText from '@material-ui/core/FormHelperText'
+import FormControl from '@material-ui/core/FormControl'
+import { withStyles } from '@material-ui/core/styles'
 
 // - Import app components
 import ImgCover from 'components/imgCover'
@@ -44,9 +50,9 @@ import AppInput from 'layouts/appInput'
 import FileAPI from 'api/FileAPI'
 
 // - Import actions
-import * as userActions from 'actions/userActions'
-import * as globalActions from 'actions/globalActions'
-import * as imageGalleryActions from 'actions/imageGalleryActions'
+import * as userActions from 'store/actions/userActions'
+import * as globalActions from 'store/actions/globalActions'
+import * as imageGalleryActions from 'store/actions/imageGalleryActions'
 
 import { IEditProfileComponentProps } from './IEditProfileComponentProps'
 import { IEditProfileComponentState } from './IEditProfileComponentState'
@@ -294,9 +300,9 @@ export class EditProfileComponent extends Component<IEditProfileComponentProps, 
    */
   handleUpdate = () => {
     const { fullNameInput, tagLineInput, avatar, banner, selectedBirthday, companyName, webUrl, twitterId } = this.state
-    const { info } = this.props
+    const { info, update } = this.props
 
-    if (this.state.fullNameInput.trim() === '') {
+    if (fullNameInput.trim() === '') {
       this.setState({
         fullNameInputError: 'This field is required'
       })
@@ -305,7 +311,7 @@ export class EditProfileComponent extends Component<IEditProfileComponentProps, 
         fullNameInputError: ''
       })
 
-      this.props.update!({
+      update!({
         fullName: fullNameInput,
         tagLine: tagLineInput,
         avatar: avatar,
@@ -562,16 +568,17 @@ const mapDispatchToProps = (dispatch: any, ownProps: IEditProfileComponentProps)
  * @param  {object} ownProps is the props belong to component
  * @return {object}          props of component
  */
-const mapStateToProps = (state: any, ownProps: IEditProfileComponentProps) => {
+const mapStateToProps = (state: Map<string, any>, ownProps: IEditProfileComponentProps) => {
+  const uid = state.getIn(['authorize', 'uid'])
   return {
-    currentLanguage: getActiveLanguage(state.locale).code,
-    translate: getTranslate(state.locale),
-    open: state.user.openEditProfile,
-    info: state.user.info[state.authorize.uid],
-    avatarURL: state.imageGallery.imageURLList
+    currentLanguage: getActiveLanguage(state.get('locale')).code,
+    translate: getTranslate(state.get('locale')),
+    open: state.getIn(['user', 'openEditProfile'], false),
+    info: state.getIn(['user', 'info', uid]),
+    avatarURL: state.getIn(['imageGallery', 'imageURLList'])
 
   }
 }
 
 // - Connect component to redux store
-export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(EditProfileComponent as any) as any)
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles as any)(EditProfileComponent as any) as any)

@@ -3,22 +3,25 @@ import React, { Component } from 'react'
 import { NavLink } from 'react-router-dom'
 import { connect } from 'react-redux'
 import classNames from 'classnames'
+import { Map } from 'immutable'
 
 // - Material UI
-import SvgDehaze from 'material-ui-icons/Dehaze'
-import { grey, blue } from 'material-ui/colors'
-import Toolbar from 'material-ui/Toolbar'
-import IconButton from 'material-ui/IconButton'
-import Popover from 'material-ui/Popover'
-import AppBar from 'material-ui/AppBar'
-import Menu, { MenuList, MenuItem } from 'material-ui/Menu'
-import Paper from 'material-ui/Paper'
-import Hidden from 'material-ui/Hidden'
-import NotificationsIcon from 'material-ui-icons/Notifications'
-import Tooltip from 'material-ui/Tooltip'
-import Typography from 'material-ui/Typography'
+import SvgDehaze from '@material-ui/icons/Dehaze'
+import { grey, blue } from '@material-ui/core/colors'
+import Toolbar from '@material-ui/core/Toolbar'
+import IconButton from '@material-ui/core/IconButton'
+import Popover from '@material-ui/core/Popover'
+import AppBar from '@material-ui/core/AppBar'
+import MenuList from '@material-ui/core/MenuList'
+import MenuItem from '@material-ui/core/MenuItem'
+import Menu from '@material-ui/core/Menu'
+import Paper from '@material-ui/core/Paper'
+import Hidden from '@material-ui/core/Hidden'
+import NotificationsIcon from '@material-ui/icons/Notifications'
+import Tooltip from '@material-ui/core/Tooltip'
+import Typography from '@material-ui/core/Typography'
 import { Manager, Target, Popper } from 'react-popper'
-import { withStyles } from 'material-ui/styles'
+import { withStyles } from '@material-ui/core/styles'
 import { getTranslate, getActiveLanguage } from 'react-localize-redux'
 import config from 'src/config'
 
@@ -27,8 +30,8 @@ import UserAvatarComponent from 'components/userAvatar'
 import Notify from 'components/notify'
 
 // - Import actions
-import * as globalActions from 'actions/globalActions'
-import { authorizeActions } from 'actions'
+import * as globalActions from 'store/actions/globalActions'
+import { authorizeActions } from 'store/actions'
 import { IHomeHeaderComponentProps } from './IHomeHeaderComponentProps'
 import { IHomeHeaderComponentState } from './IHomeHeaderComponentState'
 
@@ -256,18 +259,20 @@ const mapDispatchToProps = (dispatch: Function, ownProps: IHomeHeaderComponentPr
 }
 
 // - Map state to props
-const mapStateToProps = (state: any, ownProps: IHomeHeaderComponentProps) => {
+const mapStateToProps = (state: Map<string,any>, ownProps: IHomeHeaderComponentProps) => {
 
-  let notifyCount = state.notify.userNotifies
-    ? Object
-      .keys(state.notify.userNotifies)
-      .filter((key) => !state.notify.userNotifies[key].isSeen).length
+  const uid = state.getIn(['authorize', 'uid'], 0)
+  const userNotifies: Map<string, any> = state.getIn(['notify','userNotifies'])
+  let notifyCount = userNotifies
+    ? userNotifies
+      .filter((notification) => !notification.get('isSeen', false)).count()
     : 0
+    const user = state.getIn(['user', 'info', uid], {})
   return {
-    translate: getTranslate(state.locale),
-    avatar: state.user.info && state.user.info[state.authorize.uid] ? state.user.info[state.authorize.uid].avatar : '',
-    fullName: state.user.info && state.user.info[state.authorize.uid] ? state.user.info[state.authorize.uid].fullName : '',
-    title: state.global.headerTitle,
+    translate: getTranslate(state.get('locale')),
+    avatar: user.avatar || '',
+    fullName: user.fullName || '',
+    title: state.getIn(['global', 'headerTitle'], ''),
     notifyCount
   }
 }
